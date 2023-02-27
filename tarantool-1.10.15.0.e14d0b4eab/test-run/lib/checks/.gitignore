@@ -1,0 +1,10 @@
+*.o
+*.so
+*~
+*.swp*
+build/
+Testing/
+*.so
+*.dylib
+packpack
+.rocks

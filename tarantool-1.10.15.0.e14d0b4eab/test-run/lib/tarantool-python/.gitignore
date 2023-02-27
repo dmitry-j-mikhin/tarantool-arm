@@ -1,0 +1,19 @@
+*.pyc
+*.pyo
+*.wpr
+*~
+/build/
+/dist/
+/MANIFEST
+*.snap
+sophia
+*.egg-info
+.tox
+
+*.xlog
+*.snap
+*.vylog
+
+# Vim Swap files
+*.sw[a-z]
+.idea

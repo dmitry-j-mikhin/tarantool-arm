@@ -1,0 +1,297 @@
+build_path = os.getenv("BUILDDIR")
+---
+...
+package.cpath = build_path..'/test/box/?.so;'..build_path..'/test/box/?.dylib;'..package.cpath
+---
+...
+log = require('log')
+---
+...
+net = require('net.box')
+---
+...
+c = net.connect(os.getenv("LISTEN"))
+---
+...
+box.schema.func.create('function1', {language = "C"})
+---
+...
+box.schema.user.grant('guest', 'execute', 'function', 'function1')
+---
+...
+_ = box.schema.space.create('test')
+---
+...
+_ = box.space.test:create_index('primary')
+---
+...
+box.schema.user.grant('guest', 'read,write', 'space', 'test')
+---
+...
+c:call('function1')
+---
+- []
+...
+box.schema.func.drop("function1")
+---
+...
+box.schema.func.create('function1.args', {language = "C"})
+---
+...
+box.schema.user.grant('guest', 'execute', 'function', 'function1.args')
+---
+...
+c:call('function1.args')
+---
+- error: invalid argument count
+...
+c:call('function1.args', { "xx" })
+---
+- error: first tuple field must be uint
+...
+c:call('function1.args', { 15 })
+---
+- [[15, 'hello']]
+...
+box.schema.func.drop("function1.args")
+---
+...
+box.schema.func.create('function1.multi_inc', {language = "C"})
+---
+...
+box.schema.user.grant('guest', 'execute', 'function', 'function1.multi_inc')
+---
+...
+c:call('function1.multi_inc')
+---
+- []
+...
+box.space.test:select{}
+---
+- []
+...
+c:call('function1.multi_inc', { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 })
+---
+- []
+...
+box.space.test:select{}
+---
+- - [1, 0]
+  - [2, 0]
+  - [3, 0]
+  - [4, 0]
+  - [5, 0]
+  - [6, 0]
+  - [7, 0]
+  - [8, 0]
+  - [9, 0]
+  - [10, 0]
+...
+c:call('function1.multi_inc', { 2, 4, 6, 8, 10 })
+---
+- []
+...
+box.space.test:select{}
+---
+- - [1, 0]
+  - [2, 1]
+  - [3, 0]
+  - [4, 1]
+  - [5, 0]
+  - [6, 1]
+  - [7, 0]
+  - [8, 1]
+  - [9, 0]
+  - [10, 1]
+...
+c:call('function1.multi_inc', { 0, 2, 4 })
+---
+- []
+...
+box.space.test:select{}
+---
+- - [0, 0]
+  - [1, 0]
+  - [2, 2]
+  - [3, 0]
+  - [4, 2]
+  - [5, 0]
+  - [6, 1]
+  - [7, 0]
+  - [8, 1]
+  - [9, 0]
+  - [10, 1]
+...
+box.schema.func.drop("function1.multi_inc")
+---
+...
+box.schema.func.create('function1.errors', {language = "C"})
+---
+...
+box.schema.user.grant('guest', 'execute', 'function', 'function1.errors')
+---
+...
+c:call('function1.errors')
+---
+- error: unknown error
+...
+box.schema.func.drop("function1.errors")
+---
+...
+box.schema.func.create('xxx', {language = 'invalid'})
+---
+- error: Unsupported language 'INVALID' specified for function 'xxx'
+...
+-- language normalization
+function func_lang(name) return (box.space._func.index[2]:select{name}[1] or {})[5] end
+---
+...
+box.schema.func.create('f11'),                      func_lang('f11')
+---
+- null
+- LUA
+...
+box.schema.func.create('f12', {language = 'Lua'}),  func_lang('f12')
+---
+- null
+- LUA
+...
+box.schema.func.create('f13', {language = 'lua'}),  func_lang('f13')
+---
+- null
+- LUA
+...
+box.schema.func.create('f14', {language = 'lUa'}),  func_lang('f14')
+---
+- null
+- LUA
+...
+box.schema.func.create('f15', {language = 'c'}),    func_lang('f15')
+---
+- null
+- C
+...
+box.schema.func.create('f16', {language = 'C'}),    func_lang('f16')
+---
+- null
+- C
+...
+box.schema.func.drop("f11")
+---
+...
+box.schema.func.drop("f12")
+---
+...
+box.schema.func.drop("f13")
+---
+...
+box.schema.func.drop("f14")
+---
+...
+box.schema.func.drop("f15")
+---
+...
+box.schema.func.drop("f16")
+---
+...
+box.space.test:drop()
+---
+...
+-- Missing shared library
+name = 'unkownmod.unknownfunc'
+---
+...
+box.schema.func.create(name, {language = 'C'})
+---
+...
+box.schema.user.grant('guest', 'execute', 'function', name)
+---
+...
+c:call(name)
+---
+- error: 'Failed to dynamically load module ''unkownmod'': module not found'
+...
+box.schema.func.drop(name)
+---
+...
+-- Drop function while executing gh-910
+box.schema.func.create('function1.test_yield', {language = "C"})
+---
+...
+box.schema.user.grant('guest', 'execute', 'function', 'function1.test_yield')
+---
+...
+s = box.schema.space.create('test_yield')
+---
+...
+_ = s:create_index('pk')
+---
+...
+box.schema.user.grant('guest', 'read,write', 'space', 'test_yield')
+---
+...
+fiber = require('fiber')
+---
+...
+ch = fiber.channel(1)
+---
+...
+_ = fiber.create(function() c:call('function1.test_yield') ch:put(true) end)
+---
+...
+while s:get({1}) == nil do fiber.yield(0.0001) end
+---
+...
+box.schema.func.drop('function1.test_yield')
+---
+...
+ch:get()
+---
+- true
+...
+s:drop()
+---
+...
+-- gh-2914: check identifier constraints.
+test_run = require('test_run').new()
+---
+...
+identifier = require("identifier")
+---
+...
+test_run:cmd("setopt delimiter ';'")
+---
+- true
+...
+--
+-- '.' in func name is used to point out path therefore '.' in name
+-- itself is prohibited
+--
+--
+identifier.run_test(
+	function (identifier)
+		if identifier == "." then return end
+		box.schema.func.create(identifier, {language = "lua"})
+		box.schema.user.grant('guest', 'execute', 'function', identifier)
+		rawset(_G, identifier, function () return 1 end)
+		local res = pcall(c.call, c, identifier)
+		if c:call(identifier) ~= 1 then
+			error("Should not fire")
+		end
+		rawset(_G, identifier, nil)
+	end,
+	function (identifier)
+		if identifier == "." then return end
+		box.schema.func.drop(identifier)
+	end
+);
+---
+- All tests passed
+...
+test_run:cmd("setopt delimiter ''");
+---
+- true
+...
+c:close()
+---
+...

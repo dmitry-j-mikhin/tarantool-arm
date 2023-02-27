@@ -1,0 +1,63 @@
+name: test-run
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    if: ( github.event_name == 'push' ||
+        github.event.pull_request.head.repo.full_name != github.repository ) &&
+        ( github.repository == 'tarantool/test-run' )
+
+    runs-on: ubuntu-20.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.7', '3.8', '3.9', '3.10']
+        tarantool-version: ['2.8', '2.10']
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 1
+        submodules: recursive
+    - name: set up Tarantool ${{ matrix.tarantool-version }}
+      uses: tarantool/setup-tarantool@v2
+      with:
+        tarantool-version: ${{ matrix.tarantool-version }}
+    - name: set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: display python version
+      run: python -c "import sys; print(sys.version)"
+    - name: setup dependencies
+      run: |
+       sudo apt update -y
+       sudo apt-get -y install lua5.1 luarocks
+       sudo luarocks install luacheck
+    - name: setup python dependencies
+      run: |
+       pip install -r requirements.txt
+       pip install -r requirements-test.txt
+    - name: run static analysis
+      run: |
+       make lint
+    - name: run unit testing
+      run: |
+        # Flush the variable to don't spoil job summary with tests,
+        # which are expected to fail.
+        GITHUB_STEP_SUMMARY= make test_unittest
+    - name: run integration testing
+      run: |
+        make test_integration
+    - name: code coverage
+      if: ${{ matrix.python-version == '3.8' && matrix.tarantool-version == '2.10' }}
+      run: |
+       pip install coveralls==3.*
+       make coverage
+    - name: upload coverage data to coveralls.io
+      if: ${{ matrix.python-version == '3.8' && matrix.tarantool-version == '2.10' }}
+      run: coveralls --service=github
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

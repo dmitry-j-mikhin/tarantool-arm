@@ -1,0 +1,24 @@
+*.[oa]
+*.so*
+*.obj
+*.lib
+*.exp
+*.dll
+*.exe
+*.manifest
+*.dmp
+*.swp
+.tags
+
+# CMake generated artefacts
+.ninja_deps
+.ninja_log
+CMakeCache.txt
+CMakeFiles
+Makefile
+build.ninja
+cmake_install.cmake
+cmake_uninstall.cmake
+compile_commands.json
+install_manifest.txt
+luajit.pc
