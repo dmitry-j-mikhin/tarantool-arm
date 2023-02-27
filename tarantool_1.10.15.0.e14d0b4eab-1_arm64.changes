@@ -1,0 +1,31 @@
+Format: 1.8
+Date: Thu, 27 Feb 2023 10:00:00 +0300
+Source: tarantool
+Binary: tarantool tarantool-common tarantool-dev
+Architecture: all arm64
+Version: 1.10.15.0.e14d0b4eab-1
+Distribution: stable
+Urgency: medium
+Maintainer: Roman Tsisyk <roman@tarantool.org>
+Changed-By: Dmitry Mikhin <dmikhin@wallarm.com>
+Description:
+ tarantool  - In-memory database with a Lua application server
+ tarantool-common - Tarantool in-memory database - common files
+ tarantool-dev - Tarantool in-memory database - development headers
+Changes:
+ tarantool (1.10.15.0.e14d0b4eab-1) stable; urgency=medium
+Checksums-Sha1:
+ a72a6dbd131cb0fdca9cfc077cc674fc6f0616df 37740 tarantool-common_1.10.15.0.e14d0b4eab-1_all.deb
+ ed001fce6d7cf182906070ad0301c2a240cd7e5f 85064 tarantool-dev_1.10.15.0.e14d0b4eab-1_arm64.deb
+ 128a787557f808aae997d5298d02876a0ea77fea 9513 tarantool_1.10.15.0.e14d0b4eab-1_arm64.buildinfo
+ 8ec58d0c6be96e08db89dde8de3e280ba8d19f47 7335744 tarantool_1.10.15.0.e14d0b4eab-1_arm64.deb
+Checksums-Sha256:
+ 30b750bcb3310dde761a6d19305119462915b489e230ea8b64727fa801056a79 37740 tarantool-common_1.10.15.0.e14d0b4eab-1_all.deb
+ ad569fda4a98b2704cd6422db54d2674af9d884f13158596b175861522591a42 85064 tarantool-dev_1.10.15.0.e14d0b4eab-1_arm64.deb
+ 4a96488028c559f71fca493c9f005a5d5279968f686201a6ac1917cb56dbf2ff 9513 tarantool_1.10.15.0.e14d0b4eab-1_arm64.buildinfo
+ f375423a30fe08cae936b5d10cde81767ad112d2f401d3f98ec4aea08c028778 7335744 tarantool_1.10.15.0.e14d0b4eab-1_arm64.deb
+Files:
+ 1586901e5ec0fde63dafbe3f6a641dfa 37740 database optional tarantool-common_1.10.15.0.e14d0b4eab-1_all.deb
+ 834e0309b2d30903647f7c8a08c27e55 85064 libdevel optional tarantool-dev_1.10.15.0.e14d0b4eab-1_arm64.deb
+ 16ca0e4dd882966006e3e8c5c2659144 9513 database optional tarantool_1.10.15.0.e14d0b4eab-1_arm64.buildinfo
+ 9e1840920a6d3153fed5ba31ae6ed3aa 7335744 database optional tarantool_1.10.15.0.e14d0b4eab-1_arm64.deb
