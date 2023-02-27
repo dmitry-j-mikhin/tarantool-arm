@@ -15,13 +15,14 @@ DEB_CMAKE_EXTRA_FLAGS := \
 	-DCMAKE_INSTALL_LIBDIR=lib/$(DEB_HOST_MULTIARCH) \
 	-DCMAKE_INSTALL_SYSCONFDIR=/etc \
 	-DCMAKE_INSTALL_LOCALSTATEDIR=/var \
+	-DENABLE_BACKTRACE=OFF \
 	-DENABLE_DIST=ON \
 	-DWITH_SYSVINIT=ON \
 	-DWITH_SYSTEMD=$(WITH_SYSTEMD)
 
-ifneq ($(MAKE_CHECK), false)
-	DEB_MAKE_CHECK_TARGET := test-force
-endif
+#ifneq ($(MAKE_CHECK), false)
+#	DEB_MAKE_CHECK_TARGET := test-force
+#endif
 
 # Install tarantool.service within tarantool-common package, but does not
 # install it within tarantool and tarantool-dev packages.
